@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>User Page</title>
+</head>
+<body>
+<h1>User Portal</h1>
+<div id="auth">
+    <h2>Register</h2>
+    <input id="reg_user" placeholder="username">
+    <input id="reg_pass" placeholder="password" type="password">
+    <button onclick="register()">Register</button>
+    <h2>Login</h2>
+    <input id="log_user" placeholder="username">
+    <input id="log_pass" placeholder="password" type="password">
+    <button onclick="login()">Login</button>
+</div>
+<div id="actions" style="display:none;">
+    <p>Token: <span id="token"></span></p>
+    <button onclick="wallet()">View Wallet</button>
+    <button onclick="generate()">Generate Address</button>
+    <button onclick="listPayments()">List Payments</button>
+    <h3>Create Payment</h3>
+    <input id="pay_amount" placeholder="amount" type="number">
+    <button onclick="createPayment()">Create</button>
+    <pre id="output"></pre>
+</div>
+<script>
+let token = '';
+function register() {
+    fetch('/api/v1/auth/register', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:document.getElementById('reg_user').value, password:document.getElementById('reg_pass').value})
+    }).then(r=>r.json()).then(show);
+}
+function login() {
+    fetch('/api/v1/auth/login', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:document.getElementById('log_user').value, password:document.getElementById('log_pass').value})
+    }).then(r=>r.json()).then(d=>{
+        if(d.token){token=d.token;document.getElementById('token').textContent=token;document.getElementById('actions').style.display='block';}
+        show(d);
+    });
+}
+function wallet(){
+    fetch('/api/v1/wallet',{headers:{Authorization:'Bearer '+token}}).then(r=>r.json()).then(show);
+}
+function generate(){
+    fetch('/api/v1/wallet/generate-address',{method:'POST',headers:{Authorization:'Bearer '+token}}).then(r=>r.json()).then(show);
+}
+function createPayment(){
+    fetch('/api/v1/payments',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({amount:Number(document.getElementById('pay_amount').value)})}).then(r=>r.json()).then(show);
+}
+function listPayments(){
+    fetch('/api/v1/payments',{headers:{Authorization:'Bearer '+token}}).then(r=>r.json()).then(show);
+}
+function show(d){document.getElementById('output').textContent=JSON.stringify(d,null,2);}
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Page</title>
+</head>
+<body>
+<h1>Admin Portal</h1>
+<div>
+    <input id="user" placeholder="username">
+    <input id="pass" placeholder="password" type="password">
+    <button onclick="login()">Login as Admin</button>
+</div>
+<div id="panel" style="display:none;">
+    <p>Token: <span id="token"></span></p>
+    <button onclick="listUsers()">List Users</button>
+    <pre id="output"></pre>
+</div>
+<script>
+let token='';
+function login(){
+    fetch('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.getElementById('user').value,password:document.getElementById('pass').value})}).then(r=>r.json()).then(d=>{if(d.token){token=d.token;document.getElementById('panel').style.display='block';document.getElementById('token').textContent=token;}show(d);});
+}
+function listUsers(){fetch('/api/v1/admin/users',{headers:{Authorization:'Bearer '+token}}).then(r=>r.json()).then(show);}
+function show(d){document.getElementById('output').textContent=JSON.stringify(d,null,2);}
+</script>
+</body>
+</html>
